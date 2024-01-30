@@ -1,0 +1,178 @@
+---
+title: "HOPR_P3C9"
+format: html
+---
+
+### 조작된 주사위(6의 확률이 3/8인 주사위)의 기대값 구하기
+
+```{r}
+die = c(1,2,3,4,5,6)
+```
+
+```{r}
+rolls = expand.grid(die,die)
+rolls
+```
+
+```{r}
+rolls$value = rolls$Var1 + rolls$Var2
+head(rolls,3)
+```
+
+```{r}
+prob = c("1" = 1/8, "2" = 1/8, "3" = 1/8,"4" = 1/8,"5" = 1/8,"6" = 3/8)
+# 검색테이블
+```
+
+```{r}
+prob[rolls$Var1]
+```
+
+```{r}
+rolls$prob1 = prob[rolls$Var1]
+head(rolls, 3)
+```
+
+```{r}
+rolls$prob2 = prob[rolls$Var2]
+head(rolls,3)
+```
+
+```{r}
+rolls$prob = rolls$prob1 * rolls$prob2
+head(rolls,3)
+```
+
+```{r}
+sum(rolls$value * rolls$prob) # 조작된 주사위(6의 확률이 3/8인 주사위)의 기대값
+```
+
+### 연습문제 205p
+
+```{r}
+wheel = c("DD","7","BBB", "BB", "B", "C", "0")
+combos = expand.grid(wheel,wheel,wheel,stringsAsFactors = F)
+combos
+```
+
+```{r}
+get_symbols <- function() {
+  wheel <- c("DD", "7", "BBB", "BB", "B", "C", "0")
+  sample(wheel, size = 3, replace = TRUE, 
+    prob = c(0.03, 0.03, 0.06, 0.1, 0.25, 0.01, 0.52))
+}
+```
+
+```{r}
+# 검색 테이블
+prob = c("DD"= 0.03, "7" = 0.03 , "BBB" = 0.06, "BB" = 0.1, "B" = 0.25, "C" = 0.01, "0" = 0.52)
+```
+
+```{r}
+combos$prob1 = prob[combos$Var1]
+combos$prob2 = prob[combos$Var2]
+combos$prob3 = prob[combos$Var3]
+
+head(combos,3)
+```
+
+```{r}
+combos$prob = combos$prob1 * combos$prob2 * combos$prob3
+head(combos,3)
+```
+
+```{r}
+sum(combos$prob)
+```
+
+```{r}
+combos$prize = NA
+
+head(combos,3)
+```
+
+```{r}
+for (i in 1:nrow(combos)){
+  symbols = c(combos[i,1],combos[i,2],combos[i,3])
+  combos$prize[i] = score(symbols)
+}
+
+head(combos,3)
+```
+
+```{r}
+sum(combos$prob * combos$prize)
+```
+
+```{r}
+score = function(symbols){
+  
+  diamonds = sum(symbols =="DD")
+  cherries = sum(symbols == "C")
+  
+  slots = symbols[symbols != "DD"]
+  same = length(unique(slots)) == 1
+  bars = slots %in% c("B","BB","BBB")
+  
+  if(diamonds == 3){
+    prize = 100
+  } else if(same){
+    payouts = c("7" = 80, "BBB" = 40, "BB" = 25, "B" = 10,
+                "C" = 10, "0" = 0)
+    prize = unname(payouts[slots[1]])
+  } else if(all(bars)){
+    prize = 5
+  } else if(cherries > 0){
+    prize = c(0,2,5)[cherries + diamonds + 1]
+  } else{
+    prize = 0
+  }
+  
+  prize * 2^diamonds
+}
+```
+
+```{r}
+for (i in 1:nrow(combos)){
+  symbols = c(combos[i,1],combos[i,2],combos[i,3])
+  combos$prize[i] = score(symbols)
+}
+
+sum(combos$prize * combos$prob)
+```
+
+```{r}
+plays_till_broke = function(starts_with){
+  cash = starts_with
+  n = 0
+  while(cash > 0){
+    cash = cash - 1 + play()
+    n = n+1
+  }
+  n
+}
+```
+
+```{r}
+plays_till_broke(100)
+```
+
+```{r}
+plays_till_broke = function(starts_with){
+  cash = starts_with
+  n = 0
+  repeat{
+    cash = cash - 1 + play()
+    n = n + 1
+    if(cash<=0){
+      break
+    }
+  }
+  n
+}
+```
+
+```{r}
+plays_till_broke(100)
+```
+
